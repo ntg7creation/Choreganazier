@@ -9,7 +9,7 @@ import * as THREE from 'three'
 /* ------------------------------- My objects ------------------------------- */
 import EmployeeTable from "../Mui/TableCLicker.jsx"
 import MainMenu from "../Menus/MainMenu.jsx"
-import TaskWindow from "../CustomeComponents/TaskWindow.jsx"
+import TaskWindow from "../Menus/TaskWindow.jsx"
 import UserProfile from "../Menus/UserInfo.jsx"
 const gui = new dat.GUI()
 const PI = Math.PI

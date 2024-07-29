@@ -25,3 +25,12 @@ export const BoxStyle = {
     left: '2%',
     width: '96%',
 }
+
+export const paragraphStyle = {
+    fontFamily: 'Gideon Roman, serif',
+    fontweight: 400,
+    fontstyle: 'normal',
+    fontSize: '1.4vw',
+    textAlign: 'left',
+    position: 'relative',
+}
