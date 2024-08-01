@@ -30,7 +30,7 @@ export const paragraphStyle = {
     fontFamily: 'Gideon Roman, serif',
     fontweight: 400,
     fontstyle: 'normal',
-    fontSize: '1.4vw',
+    fontSize: '1.8vw',
     textAlign: 'left',
     position: 'relative',
 }

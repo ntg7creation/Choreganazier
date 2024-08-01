@@ -11,6 +11,7 @@ import EmployeeTable from "../Mui/TableCLicker.jsx"
 import MainMenu from "../Menus/MainMenu.jsx"
 import TaskWindow from "../Menus/TaskWindow.jsx"
 import UserProfile from "../Menus/UserInfo.jsx"
+import WeekComponent from "../Menus/WeekWindow.jsx"
 const gui = new dat.GUI()
 const PI = Math.PI
 function GridLoactions(rows, cols) {
@@ -150,27 +151,7 @@ export default function Experience() {
             >
                 {MainMenu(setface_State, resolution)}
             </Html>
-            {/* <Html
-                distanceFactor={1}
-                rotation={[0, 0, 0]}
-                position={[0, 0, 0.51]}
-                transform
-                occlude
-                style={{ width: `${resolution}px`, height: `${resolution}px` }}
-            >
-                <div>
-                    {[...CalanderLocationsMonth].map((value, index) =>
-                        <button key={index}
-                            style={{ width: '57px', height: '100px' }}
-                            onClick={() => {
-                                // setface_State([0, PI / 2, 0])
 
-                                setface_State([-PI / 2, 0, 0])
-                            }}
-                        >Click Me {index}
-                        </button>)}
-                </div>
-            </Html> */}
 
 
             {/*  ----------------------------- Week Calander -----------------------------  */}
@@ -184,12 +165,15 @@ export default function Experience() {
                 style={{ width: `${resolution}px`, height: `${resolution}px` }}
             >
                 <div>
-                    {[...Array(7)].map((value, index) =>
+                    {/* {[...Array(7)].map((value, index) =>
                         <button key={index}
                             style={{ width: '57px', height: `${resolution}px` }}
                             onClick={() => { setface_State([0, PI, 0]) }}
                         >Click Me {index}
-                        </button>)}
+                        </button>)} */}
+                    <WeekComponent onButtonClick={(day) => {
+                        setface_State([-PI / 2, 0, 0])
+                    }} />
                 </div>
             </Html>
 
@@ -239,7 +223,7 @@ export default function Experience() {
                 />
             </Html>
 
-            {/*  -------------------------------- Task View -------------------------------  */}
+            {/*  -------------------------------- Temp View -------------------------------  */}
 
             <Html
                 distanceFactor={1}
@@ -252,6 +236,7 @@ export default function Experience() {
             >
                 {/* {EmployeeTable()} */}
                 {TaskWindow({ task: { Name: 'temp name', EstimatedTimeToComplete: 90 } })}
+                {/* <WeekComponent onButtonClick={(day) => {  setface_State([-PI / 2, 0, 0])}} /> */}
             </Html>
 
             {/*  -------------------------------- User View -------------------------------  */}
