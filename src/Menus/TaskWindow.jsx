@@ -1,15 +1,12 @@
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import EmployeeTable from "../Mui/TableCLicker.jsx"
 
 import { Paper, Typography, Divider, Box } from '@mui/material';
 import { headerStyle, dataStyle, BoxStyle, paragraphStyle } from "../Styles.jsx";
 import Background from 'three/examples/jsm/renderers/common/Background.js';
+import { getCrewName, getTaskData } from "../DataCom/fireBaseFunctionalActions.js"
 
-const randomdata = {
-    id: 1,
-    Job_Title: 'Cook',
-    name: 'John Doe',
-}
+
 
 const emptydata = {
     id: -1,
@@ -17,13 +14,38 @@ const emptydata = {
     name: 'this slot is empty click to add a new note',
 }
 
+
+
 const NoteClick = (props, data) => {
-
     console.log(data)
-
 }
 
-const NoteComponent = ({ maxWidth, maxHeight, data = emptydata }) => {
+const loadingTask = {
+    requiredAccessLevel: 0,
+    AssignedCrew: [],
+    AssignedCrewName: [],
+    Description: "loading",
+    EstimatedTimeToComplete: 0,
+    Location: { "latitude": 0, "longitude": 0 },
+    NumberOfSlots: 0,
+    RepeatableWeek: [false, true, false, false, false, false, false],
+    Type: "loading",
+    TimeStart: {
+        nanoseconds: 0,
+        seconds: 1562524200
+    }
+}
+
+const NoteComponent = ({ maxWidth, maxHeight, data = emptydata, Name = undefined }) => {
+    const [userName, setUserName] = useState("Loading...");
+
+
+    useEffect(() => {
+        // console.log(Name);
+        // setUserName(Name);
+    }, []);
+
+// getCrewName(userID, setUserName);
     return (
         <Paper elevation={3}
             sx={{
@@ -42,29 +64,38 @@ const NoteComponent = ({ maxWidth, maxHeight, data = emptydata }) => {
                 NoteClick(event, data);
             }}
         >
-            <Typography variant="h6" component="h2">
+            <Typography variant="h5" component="h2">
                 {data.Job_Title}
             </Typography>
             <Divider style={{ margin: '6px 0' }} />
             <Box>
                 <Typography variant="body1">
-                    {data.name}
+                    {Name ? Name : "Empty Slot Click here to assign yourself to task"}
                 </Typography>
             </Box>
         </Paper>
     );
 };
 
-export default function TaskWindow(props) {
+export default function TaskComponent(props) {
 
 
-    const slots = [
-        { Name: "My Week", Title: "Note Title", Text: "random text", maxWidth: "90%", maxHeight: "90%", data: randomdata },
-        { Name: "Full Calendar", Title: "Note Title", Text: "random text", maxWidth: "90%", maxHeight: "90%", data: emptydata },
-        { Name: "Today Calendar", Title: "Note Title", Text: "random text", maxWidth: "90%", maxHeight: "90%", data: emptydata },
-        { Name: "My Info", Title: "Note Title", Text: "random text", maxWidth: "90%", maxHeight: "90%", data: emptydata },
-        { Name: "Temp button", Title: "Note Title", Text: "random text", maxWidth: "90%", maxHeight: "90%", data: emptydata },
-    ]
+    const [taskData, setTaskData] = useState(loadingTask);
+
+    useEffect(() => {
+        props.taskName ?
+            getTaskData(props.taskName)
+                .then((data) => {
+                    // console.log(data)
+                    if (!data) {
+                        console.log("Data not found");
+                        data = loadingTask;
+                    }
+                    setTaskData(data);
+                }) : console.log("no task name")
+
+    }, []);
+
     return (
         < >
             <h2
@@ -73,7 +104,11 @@ export default function TaskWindow(props) {
                     right: '9%',
                     top: '5%'
                 }}
-            >Task Type</h2>
+            >Task Type
+                <p style={paragraphStyle}>
+                    {taskData.Type}
+                </p>
+            </h2>
             <h1
                 style={headerStyle}>Task Window
 
@@ -98,17 +133,21 @@ export default function TaskWindow(props) {
                     // alignItems: 'center',
                 }}>
                     <h2 style={dataStyle}>
-                        Task Date:
+                        Task Date: 
+                        <p style={paragraphStyle}>
+                            {new Date(taskData.TimeStart.seconds * 1000).toUTCString()}
+                        </p>
                     </h2>
-
-                    <h2 style={dataStyle}>
+                    <h2 style={dataStyle} >
                         ETC:
+                        <p style={paragraphStyle}>
+                            {taskData.EstimatedTimeToComplete} Miniutes
+                        </p>
                     </h2>
-
                     <h3 style={dataStyle}>
                         Task description
                         <p style={paragraphStyle}>
-                            some text
+                            {taskData.Description}
                         </p>
                     </h3>
 
@@ -119,10 +158,26 @@ export default function TaskWindow(props) {
                         //  backgroundColor: '#FFFFFF',
                         display: 'grid',
                         gridTemplateColumns: 'auto auto auto',
+                        height: '80%',
                     }}
                 >
+                    {Array(taskData.NumberOfSlots).fill(0).map((_, index) =>
+                        index < taskData.AssignedCrew.length ?
+                            < NoteComponent
+                                key={index}
+                                Name={taskData.AssignedCrewName[index]}
+                                data={{
+                                    id: 1,
+                                    Job_Title: 'Slot ' + (index + 1),
+                                    name: 'this slot is empty click to add a new note',
+                                }}
+                            />
+                            : <NoteComponent
+                                key={index} />
 
-                    {slots.map((value, index) =>
+                    )}
+
+                    {/* {slots.map((value, index) =>
 
                         <NoteComponent
                             key={index}
@@ -132,7 +187,7 @@ export default function TaskWindow(props) {
                             maxHeight={value.maxHeight}
                             data={value.data} />
 
-                    )}
+                    )} */}
 
                 </Box>
             </Box>

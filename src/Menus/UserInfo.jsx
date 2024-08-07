@@ -46,7 +46,7 @@ function UserProfile() {
             defaultValue=""
             variant={variant}
           >
-
+            <label htmlFor="User_Profile-Gender_Box">Gender</label>
             {/* <MenuItem value="">None</MenuItem> */}
             <MenuItem value="Male">Male</MenuItem>
             <MenuItem value="Female">Female</MenuItem>

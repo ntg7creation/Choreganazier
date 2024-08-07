@@ -1,8 +1,8 @@
 import { Html } from "@react-three/drei";
 import * as React from 'react';
 import Button from '@mui/material/Button';
-import { headerStyle } from "../Styles.jsx";
-
+import { headerStyle, buttonStyle } from "../Styles.jsx";
+import { signOut } from "../DataCom/fireBaseCom.js"
 const PI = Math.PI
 
 
@@ -35,6 +35,7 @@ export default function MainMenu(setface_State, resolution) {
         { positions: { left: `${100 / 6}%`, bottom: '25%' }, rotation: [0, PI, 0], Name: "Today Calendar" },
         { positions: { right: `${100 / 6}%`, bottom: '25%' }, rotation: [0, -PI / 2, 0], Name: "My Info" },
         { positions: { top: '40%', left: `40%` }, rotation: [-PI / 2, 0, 0], Name: "Temp button" },
+        { positions: { top: '0%', left: `0%` }, rotation: [0, 0, 0], Name: "Logout" },
     ]
 
 
@@ -55,11 +56,21 @@ export default function MainMenu(setface_State, resolution) {
                     variant="contained"
                     disableElevation
                     style={{ ...buttonStyle, ... (value.positions) }}
-                    onClick={() => setface_State(value.rotation)}
+                    onClick={() => 
+                        setface_State(value.rotation)
+                    }
                 >
                     {value.Name}
                 </Button>
             )}
+            <Button
+                variant="contained"
+                disableElevation
+                style={{ ...buttonStyle, ... ({ top: '0%', left: `0%` }) }}
+                onClick={() => signOut()}
+            >
+                Logout
+            </Button>
 
 
 

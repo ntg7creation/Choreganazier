@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Box, Grid, Paper, Divider } from '@mui/material';
 import { headerStyle, } from "../Styles.jsx";
 
@@ -26,13 +26,16 @@ const tasks = Array.from({ length: 7 }, (_, i) => {
     }));
 }).flat();
 
-console.log(tasks);
+// console.log(tasks);
 
 
 const WeekComponent = ({ onButtonClick }) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const refs = useRef([]);
-    refs.current = days.map((_, i) => refs.current[i] ?? React.createRef());
+
+    useEffect(() => {
+        refs.current = days.map(() => React.createRef());
+    }, []);
 
     const updatePosition = (dayIndex, left, top) => {
         if (refs.current[dayIndex] && refs.current[dayIndex].current) {

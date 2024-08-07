@@ -8,6 +8,17 @@ export const headerStyle = {
     // fontSize: `${resolution / 300}rem`,
     fontSize: '4vw',
 };
+export const buttonStyle = {
+    position: 'absolute',
+    // width: `${resolution / 4}px`,
+    width: '25%',
+    // height: `${resolution / 8}px`,
+    height: '12.5%',
+    // fontSize: `${resolution / 600}rem`,
+    fontSize: '2vw',
+};
+
+
 
 export const dataStyle = {
     position: 'relative',

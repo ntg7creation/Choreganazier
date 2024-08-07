@@ -31,7 +31,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 const provider = new GoogleAuthProvider();
-const auth = getAuth();
+export const auth = getAuth(); // TODO find a way to get rid of export
 let docSnap = undefined;
 /* -------------------------------------------------------------------------- */
 /*                                static values                               */
@@ -49,6 +49,9 @@ onAuthStateChanged(auth, (user) => {
     ? console.log("you are logged in", user)
     : console.log("you are signed out ");
 });
+
+
+
 
 export function Login() {
   auth.currentUser
@@ -79,7 +82,15 @@ export function signOut() {
   auth.signOut();
 }
 
+
+
 async function checkAction(condition, action) {
+  const userID = getMyID();
+  if (!userID) {
+    // console.error("No valid user ID found, action aborted.");
+    return;
+  }
+
   await getSnap(CREW_PATH, getMyID());
   if (condition()) {
     action();
@@ -91,9 +102,16 @@ async function checkAction(condition, action) {
 /*                             basic info getters                             */
 /* -------------------------------------------------------------------------- */
 function getMyID() {
-  return auth.currentUser.uid;
-  // return "tempID";
+  if (auth.currentUser) {
+    return auth.currentUser.uid;
+  } else {
+    // console.error("No user is currently logged in.");
+    return null;
+  }
 }
+// function getMyID() {
+//   return auth.currentUser.uid;
+// }
 
 async function getSnap(collection_path, document) {
   docSnap = await getDoc(doc(db, collection_path, document));
@@ -121,9 +139,29 @@ async function checkAccessLevel(requiredAccessLevel) {
   return false;
 }
 
+async function checkMyAccessLevel(requiredAccessLevel) {
+  await getSnap(CREW_PATH, getMyID());
+  if (docSnap.data().AccessLevel >= requiredAccessLevel) {
+    return true;
+  } else {
+    return false;
+  }
+}
 /* -------------------------------------------------------------------------- */
 /*                                   actions                                  */
 /* -------------------------------------------------------------------------- */
+export async function getData(docPath, docName) {
+  // checkMyAccessLevel(ACCESSLEVEL1); // TODO the data base will not allow me to read the AccessLevel if I dont have clearnse access
+  const docSnap = await getDoc(doc(db, docPath, docName));
+  if (!docSnap.exists()) {
+    console.log("No such document:", docName, " in ", docPath);
+    return;
+  }
+
+  return docSnap.data();
+  // console.log("Document data:", docSnap.data());
+}
+
 export async function getPromiseData(
   docPath,
   docName,
@@ -131,6 +169,7 @@ export async function getPromiseData(
     console.log(data);
   }
 ) {
+  checkAction();
   const docSnap = await getDoc(doc(db, docPath, docName));
   if (!docSnap.exists()) {
     console.log("No such document!");
@@ -170,7 +209,42 @@ export async function editField(
   }, action);
 }
 
-export function displayData(collection_path, document) {
+export function getField(
+  collectionName,
+  documentID,
+  fieldName,
+  setFunction = undefined
+) {
+  const action = async () => {
+    // Check if the inputs are valid
+    if (!collectionName || !documentID || !fieldName || !setFunction) {
+      // console.error("Invalid input:", {
+      //   collectionName,
+      //   documentID,
+      //   fieldName,
+      //   setFunction,
+      // });
+      return;
+    }
+
+    const docRef = doc(db, collectionName, documentID);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) {
+      console.log("No such document!");
+      return;
+    }
+
+    const data = docSnap.data();
+    // console.log(data[fieldName]);
+    setFunction(data[fieldName]);
+  };
+
+  checkAction(() => {
+    return true;
+  }, action);
+}
+
+export function logData(collection_path, document) {
   const accessLevelNeeded = ACCESSLEVEL1;
   const text = "Document data:";
 
@@ -181,7 +255,7 @@ export function displayData(collection_path, document) {
       return;
     }
     const data = docSnap.data();
-    console.log(text, data);
+    // console.log(text, data);
   };
 
   checkAction(() => {

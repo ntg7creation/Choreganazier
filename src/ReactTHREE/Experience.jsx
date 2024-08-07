@@ -1,33 +1,44 @@
 import { Html } from '@react-three/drei';
 import { useThree, extend, useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import gsap from 'gsap'
-import { Environment, Sky, ContactShadows, RandomizedLight, AccumulativeShadows, SoftShadows, BakeShadows, useHelper, OrbitControls } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import * as dat from 'lil-gui'
 import * as THREE from 'three'
 
+/* -------------------------------- Fire Base ------------------------------- */
+import { auth } from '../DataCom/fireBaseCom.js'
 /* ------------------------------- My objects ------------------------------- */
-import EmployeeTable from "../Mui/TableCLicker.jsx"
 import MainMenu from "../Menus/MainMenu.jsx"
-import TaskWindow from "../Menus/TaskWindow.jsx"
+
 import UserProfile from "../Menus/UserInfo.jsx"
-import WeekComponent from "../Menus/WeekWindow.jsx"
+import LoginMenu from "../Menus/LoginMenu.jsx"
+
+// import WeekComponent from "../Menus/WeekWindow.jsx"
+const WeekComponent = lazy(() => import('../Menus/WeekWindow.jsx'));
+// import TaskWindow from "../Menus/TaskWindow.jsx"
+const TaskComponent = lazy(() => import('../Menus/TaskWindow.jsx'));
+
 const gui = new dat.GUI()
 const PI = Math.PI
-function GridLoactions(rows, cols) {
-    const Loactions = []
-    for (let col = 0; col < cols; col++) {
-        for (let row = 0; row < rows; row++) {
-            const y = -(col - cols / 2) * (1 / cols)
-            const x = (row - rows / 2) * (1 / rows)
-            Loactions.push([x, y])
-        }
-    }
-    return Loactions
+
+
+
+function GetGoogleCalander() {
+    return <iframe
+        src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FVancouver&bgcolor=%23ffffff&src=ZW4uY2FuYWRpYW4jaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23F6BF26"
+        style={{
+            border: 'none',
+            width: '100%',
+            height: '100%',
+            // transform: 'scale(0.8)',
+            transformOrigin: 'top left',
+
+
+        }}
+    />
 }
-const CalanderLocationsMonth = GridLoactions(7, 4)
-const CalanderLocations1Week = GridLoactions(7, 1)
-const CalanderLocations2Week = GridLoactions(7, 2)
+
 
 
 
@@ -35,16 +46,47 @@ export default function Experience() {
     const { camera, gl } = useThree()
     const meshRef = useRef()
     camera.position.set(0, 0, 3)
+
     const [face_State, setface_State] = useState([0, 0, 0]);
-    const [firstScreen, setfirstScreen] = useState(false);
+    const [user, setUser] = useState(null);
+
+    // This constant holds an array of React components that represent different views or screens in the application.
+    // Each component represents a specific feature or functionality of the application, such as the main menu, task window, user profile, week component, login menu, and Google Calendar integration.
+    // These components are used to render different views or screens based on user actions or state.
+    // const Faces = [MainMenu, TaskWindow, UserProfile, WeekComponent, LoginMenu, GetGoogleCalander]
+    const [Faces, setFaces] = useState([MainMenu,
+        <Suspense fallback={<div>Loading...</div>}>
+            <WeekComponent onButtonClick={(task) => {
+                console.log(task)
+                setface_State([-PI / 2, 0, 0])
+            }} />
+        </Suspense>,
+        <Suspense fallback={<div>Loading...</div>}>
+            <TaskComponent taskName="task2" />
+        </Suspense>
+        , UserProfile, LoginMenu, GetGoogleCalander])
+
+
+
+
+    useEffect(() => {
+
+
+        // Set up the subscription
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            setUser(user);
+        });
+
+        // Cleanup the subscription on component unmount
+        return () => unsubscribe();
+    }, []); // Empty dependency array ensures this runs once on mount
 
 
     useMemo(() => {
 
 
         /* ----------------------------- rotate the cube ---------------------------- */
-        // console.log("face_State", face_State)
-        // // console.log("firstScreen", firstScreen)
+
         if (meshRef.current) {
             gsap.to(meshRef.current.rotation, {
                 duration: 1.5, // Animation duration in seconds
@@ -54,7 +96,6 @@ export default function Experience() {
                 repeat: 0,
                 ease: "expo.out",
             })
-            // meshRef.current.rotation.set(...face_State)
 
         }
     }, [face_State]);
@@ -76,7 +117,6 @@ export default function Experience() {
                 ease: "expo.out",
                 onComplete: () => {
                     // console.log("Look-at complete!");
-                    setfirstScreen(true)
                 }
             })
         }
@@ -106,10 +146,10 @@ export default function Experience() {
 
     }, []);
 
-    useEffect(() => {
 
-    }, [])
-
+    // const weekCallback = useCallback((task) => {
+    //     console.log(task);
+    // }, []);
 
 
     const scaleValue = 3;
@@ -124,7 +164,7 @@ export default function Experience() {
         <directionalLight position={[1, 2, 3]} intensity={4.5} />
         <ambientLight intensity={1.5} />
         {/* <AxesHelper /> */}
-        <axesHelper args={[10]} position={[-5, -5, -5]} />
+        {/* <axesHelper args={[10]} position={[-5, -5, -5]} /> */}
 
 
 
@@ -140,7 +180,7 @@ export default function Experience() {
                 clearcoatRoughness={0.1}
                 reflectivity={1}
                 color="white" wireframe={false} />
-            {/*  ----------------------------- Month Calander -----------------------------  */}
+            {/*  ----------------------------- Front Window -----------------------------  */}
             <Html
                 distanceFactor={1}
                 rotation={[0, 0, 0]}
@@ -149,7 +189,11 @@ export default function Experience() {
                 occlude
                 style={{ width: `${resolution}px`, height: `${resolution}px` }}
             >
-                {MainMenu(setface_State, resolution)}
+                {user ? (
+                    Faces[0](setface_State, resolution)
+                ) : (
+                        LoginMenu(resolution)
+                )}
             </Html>
 
 
@@ -164,17 +208,10 @@ export default function Experience() {
                 occlude
                 style={{ width: `${resolution}px`, height: `${resolution}px` }}
             >
-                <div>
-                    {/* {[...Array(7)].map((value, index) =>
-                        <button key={index}
-                            style={{ width: '57px', height: `${resolution}px` }}
-                            onClick={() => { setface_State([0, PI, 0]) }}
-                        >Click Me {index}
-                        </button>)} */}
-                    <WeekComponent onButtonClick={(day) => {
-                        setface_State([-PI / 2, 0, 0])
-                    }} />
-                </div>
+                {user ? (
+                    Faces[1]
+                ) : LoginMenu(resolution)}
+
             </Html>
 
 
@@ -209,7 +246,7 @@ export default function Experience() {
                 style={{ width: `${resolution / 2}px`, height: `${resolution / 2}px` }}
                 scale={2}
             >
-                <iframe
+                {/* <iframe
                     src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FVancouver&bgcolor=%23ffffff&src=ZW4uY2FuYWRpYW4jaG9saWRheUBncm91cC52LmNhbGVuZGFyLmdvb2dsZS5jb20&color=%23F6BF26"
                     style={{
                         border: 'none',
@@ -220,7 +257,12 @@ export default function Experience() {
 
 
                     }}
-                />
+                /> */}
+                {user ? (
+                    GetGoogleCalander()
+                ) : (
+                    LoginMenu(resolution)
+                )}
             </Html>
 
             {/*  -------------------------------- Temp View -------------------------------  */}
@@ -235,7 +277,13 @@ export default function Experience() {
                 style={{ width: `${resolution}px`, height: `${resolution}px` }}
             >
                 {/* {EmployeeTable()} */}
-                {TaskWindow({ task: { Name: 'temp name', EstimatedTimeToComplete: 90 } })}
+                {user ? (
+                    // TaskWindow({ task: { Name: 'temp name', EstimatedTimeToComplete: 90 } })
+                    Faces[2]
+                ) : (
+                    LoginMenu(resolution)
+                )}
+                {/* {TaskWindow({ task: { Name: 'temp name', EstimatedTimeToComplete: 90 } })} */}
                 {/* <WeekComponent onButtonClick={(day) => {  setface_State([-PI / 2, 0, 0])}} /> */}
             </Html>
 
@@ -250,8 +298,12 @@ export default function Experience() {
                 occlude
                 style={{ width: `${resolution}px`, height: `${resolution}px` }}
             >
-
-                {UserProfile()}
+                {user ? (
+                    UserProfile()
+                ) : (
+                    LoginMenu(resolution)
+                )}
+                {/* {UserProfile()} */}
             </Html>
 
 

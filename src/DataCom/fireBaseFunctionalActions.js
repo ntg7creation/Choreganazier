@@ -1,7 +1,12 @@
 import * as FireBase from "./fireBaseCom";
 import { GeoPoint } from "firebase/firestore";
-import { createTaskData } from "../DataCom/documentsFormat";
+import { createTaskData } from "./documentsFormat";
 // import demoCrewMember from "./demoCrewMember.json";
+
+
+/* ---------------------------------- Paths --------------------------------- */
+const TASKS_PATH = "Tasks";
+const CREW_PATH = "Crew";
 /* ----------------------------- Captin Actions ----------------------------- */
 export function addCrewMember(id, crewdata) {
   // const CrewData = demoCrewMember[demoCrewMember];
@@ -46,7 +51,17 @@ export function deleteTask(taskname) {
   FireBase.DeleteTask("testTask2");
 }
 
+
+
 /* ------------------------------ Crew Actions ------------------------------ */
+export function getCrewName(userID,setFunction) {
+  FireBase.getField("Crew", userID, "Name", setFunction);
+}
+
+export async function getTaskData(taskName) {
+  return await FireBase.getData(TASKS_PATH ,taskName);
+}
+
 export function editSelf() {
   //TODO
 }
@@ -58,8 +73,9 @@ export function getAuthenticated() {
 export function signOut() {
   FireBase.signOut();
 }
-export function displayData() {
-  FireBase.displayData("Crew", "ZFJNKht1sXWmyhGsH9z1fO3MyZz1");
+
+export function logData() {
+  FireBase.logData("Crew", "ZFJNKht1sXWmyhGsH9z1fO3MyZz1");
 }
 
 export function assignSelfToTask(TaskId) {
